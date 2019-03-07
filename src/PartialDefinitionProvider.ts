@@ -11,29 +11,18 @@ import {
   workspace
 } from "vscode";
 
+import { DEFINITION_REGEXP } from "./utils";
+
 export default class PartialDefinitionProvider implements DefinitionProvider {
   constructor(private rootPath: string) {}
 
   public async provideDefinition(document: TextDocument, position: Position) {
-    const line = document.lineAt(position.line).text;
-    if (!line.includes("render")) {
+    const range = document.getWordRangeAtPosition(position, DEFINITION_REGEXP);
+    if (!range) {
       return null;
     }
-
-    const partialName = this.partialName(line);
-    if (!partialName) {
-      return null;
-    }
-
+    const partialName = document.getText(range).replace(DEFINITION_REGEXP, "$1");
     return this.partialLocation(document.fileName, partialName);
-  }
-
-  private partialName(line: string) {
-    const regex = line.includes("partial")
-      ? /render\s*\(?\s*\:?partial(?:\s*=>|:*)\s*["'](.+?)["']/
-      : /render\s*\(?\s*["'](.+?)["']/;
-    const result = line.match(regex);
-    return result ? result[1] : null;
   }
 
   private partialLocation(currentFileName: string, partialName: string) {
