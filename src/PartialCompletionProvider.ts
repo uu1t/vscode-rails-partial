@@ -3,14 +3,13 @@ import {
   CompletionItemProvider,
   TextDocument,
   Position,
-  Range,
   workspace,
   CompletionItem,
   CompletionItemKind,
   Uri
 } from "vscode";
 
-const LINE_REGEXP = /[^a-z.]render(?:\s+|\()['"]([a-zA-Z0-9_/]*)$/;
+import { COMPLETION_REGEXP } from "./utils";
 
 const matchScore = (path1: string, path2: string): number => {
   const parts1 = path1.split(path.sep).slice(0, -1);
@@ -36,17 +35,10 @@ const viewPathForRelativePath = (partialPath: Uri): string => {
 export default class PartialCompletionProvider
   implements CompletionItemProvider {
   public provideCompletionItems(document: TextDocument, position: Position) {
-    const line = document.getText(
-      new Range(
-        new Position(position.line, 0),
-        new Position(position.line, position.character)
-      )
-    );
-    const matches = line.match(LINE_REGEXP);
-    if (!matches) {
-      return Promise.resolve(null);
+    const range = document.getWordRangeAtPosition(position, COMPLETION_REGEXP);
+    if (!range) {
+      return null;
     }
-
     return this.buildCompletionItems(document);
   }
 

@@ -1,6 +1,30 @@
 import * as assert from "assert";
 
-import { PARTIAL_NAME_REGEXP } from "../utils";
+import { COMPLETION_REGEXP, DEFINITION_REGEXP } from "../utils";
+
+suite("COMPLETION_REGEXP", () => {
+  test("Match render method", () => {
+    assert.strictEqual("".match(COMPLETION_REGEXP), null);
+
+    let matches = 'render ""'.match(COMPLETION_REGEXP) as RegExpMatchArray;
+    assert.strictEqual(matches[0], 'render "');
+
+    matches = "render ''".match(COMPLETION_REGEXP) as RegExpMatchArray;
+    assert.strictEqual(matches[0], "render '");
+
+    matches = 'render "item"'.match(COMPLETION_REGEXP) as RegExpMatchArray;
+    assert.strictEqual(matches[0], 'render "item');
+
+    matches = 'render "shared/item"'.match(COMPLETION_REGEXP) as RegExpMatchArray;
+    assert.strictEqual(matches[0], 'render "shared/item');
+
+    matches = 'render partial: "item"'.match(COMPLETION_REGEXP) as RegExpMatchArray;
+    assert.strictEqual(matches[0], 'render partial: "item');
+
+    matches = 'render :partial => "item"'.match(COMPLETION_REGEXP) as RegExpMatchArray;
+    assert.strictEqual(matches[0], 'render :partial => "item');
+  });
+});
 
 suite("DEFINITION_REGEXP", () => {
   test("Match render method and extract partial name", () => {
